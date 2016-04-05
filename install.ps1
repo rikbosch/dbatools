@@ -1,5 +1,5 @@
 Remove-Module dbatools -ErrorAction SilentlyContinue
-$url = 'https://github.com/ctrlbold/dbatools/archive/master.zip'
+$url = 'https://github.com/rikbosch/dbatools/archive/master.zip'
 $path = Join-Path -Path (Split-Path -Path $profile) -ChildPath '\Modules\dbatools'
 $temp = ([System.IO.Path]::GetTempPath()).TrimEnd("\")
 $zipfile = "$temp\sqltools.zip"
