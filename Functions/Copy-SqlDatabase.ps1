@@ -69,6 +69,12 @@ Outputs a log in CSV format
 .PARAMETER Force
 Drops existing databases with matching names. If using -DetachAttach, -Force will break mirrors and drop dbs from Availability Groups.
 
+.PARAMETER LogDir
+Use Set target (local) LogDirectory
+
+.PARAMETER DataDir
+Set target (local) Data Directory
+
 .NOTES 
 Author  : Chrissy LeMaire (@cl), netnerds.net
 Requires: sysadmin access on SQL Servers
@@ -141,6 +147,13 @@ Param(
 	[Parameter(ParameterSetName="DbAttachDetach")]
 	[switch]$Reattach,
 	
+    [Parameter(ParameterSetName="DbAttachDetach")]
+    [string]$DataDir,
+
+    [Parameter(ParameterSetName="DbAttachDetach")]
+    [string]$LogDir,
+
+
 	[Parameter(Mandatory=$true, ParameterSetName="DbBackup",
 		HelpMessage="Specify a valid network share in the format \\server\share that can be accessed by your account and both Sql Server service accounts.")]
 	[string]$NetworkShare,
@@ -201,7 +214,13 @@ param(
 					$d = @{}
 					if ($ReuseFolderstructure) {
 						$d.physical = $file.filename
-					} else {
+					}
+                    elseif($DataDir){
+                        $directory = $DataDir
+						$filename = Split-Path $($file.filename) -leaf		
+						$d.physical = "$directory\$filename"
+                    }
+                     else {
 						$directory = Get-SqlDefaultPaths $destserver data
 						$filename = Split-Path $($file.filename) -leaf		
 						$d.physical = "$directory\$filename"
@@ -230,7 +249,15 @@ param(
 					$logical = "$pre$name"
 					if ($ReuseFolderstructure) {
 						$d.physical = $physical
-					} else {
+					}
+                    elseif($DataDir){
+                        $directory = $DataDir
+						if ($destserver.VersionMajor -lt 10) { $directory = "$directory\FTDATA" }
+						$filename = Split-Path($physical) -leaf	
+						$d.physical = "$directory\$filename"
+                    }                
+                    
+                     else {
 						$directory = Get-SqlDefaultPaths $destserver data
 						if ($destserver.VersionMajor -lt 10) { $directory = "$directory\FTDATA" }
 						$filename = Split-Path($physical) -leaf	
@@ -259,7 +286,13 @@ param(
 				$d = @{}
 				if ($ReuseFolderstructure) {
 					$d.physical = $file.filename
-				} else {
+				}
+                 elseif($DataDir){
+                        $directory = $LogDir
+						$filename = Split-Path $($file.filename) -leaf		
+						$d.physical = "$directory\$filename"
+                    }              
+                else {
 					$directory = Get-SqlDefaultPaths $destserver log
 					$filename = Split-Path $($file.filename) -leaf		
 					$d.physical = "$directory\$filename"
